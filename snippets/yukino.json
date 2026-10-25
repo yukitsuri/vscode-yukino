@@ -1,0 +1,276 @@
+{
+  "Main function": {
+    "prefix": "main",
+    "body": [
+      "fun main() {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Create a main function entrypoint"
+  },
+  "Function declaration": {
+    "prefix": "fun",
+    "body": [
+      "fun ${1:name}(${2:params}) -> ${3:void} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Declare a function"
+  },
+  "C ABI function": {
+    "prefix": "cfun",
+    "body": [
+      "|cdecl| public cfun ${1:name}(${2:params}) -> ${3:c_int} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Declare an exported C ABI function"
+  },
+  "Public load import": {
+    "prefix": "pload",
+    "body": [
+      "public load ${1:std.io}: ${2:print}"
+    ],
+    "description": "Public import of module symbols"
+  },
+  "Public function": {
+    "prefix": "pfun",
+    "body": [
+      "public fun ${1:name}(${2:params}) -> ${3:void} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Public function declaration"
+  },
+  "Public C ABI function": {
+    "prefix": "pcfun",
+    "body": [
+      "|cdecl| public cfun ${1:name}(${2:params}) -> ${3:c_int} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Public exported C ABI function"
+  },
+  "Public static constant": {
+    "prefix": "pstatic",
+    "body": [
+      "public static ${1:NAME}: ${2:type} = ${3:value}"
+    ],
+    "description": "Public compile-time constant"
+  },
+  "Struct declaration": {
+    "prefix": "struct",
+    "body": [
+      "struct ${1:Name} {",
+      "\t${2:field}: ${3:type}",
+      "}"
+    ],
+    "description": "Declare a value-type struct"
+  },
+  "class (alias)": {
+    "prefix": "cls",
+    "body": [
+      "class ${1:Name} {",
+      "\tfun init() {",
+      "\t\tspace",
+      "\t}",
+      "}"
+    ],
+    "description": "Declare a class"
+  },
+  "locked class (alias)": {
+    "prefix": "lcls",
+    "body": [
+      "locked class ${1:Name} {",
+      "\tfun init() {",
+      "\t\tspace",
+      "\t}",
+      "}"
+    ],
+    "description": "Declare a class that cannot be inherited"
+  },
+  "class with interface (alias)": {
+    "prefix": "clswith",
+    "body": [
+      "class ${1:Class} with ${2:Interface} {",
+      "\tfun init() {",
+      "\t\tspace",
+      "\t}",
+      "}"
+    ],
+    "description": "Declare a class implementing an interface"
+  },
+  "class extends (alias)": {
+    "prefix": "clsext",
+    "body": [
+      "class ${1:Class} extends ${2:ParentClass} {",
+      "\tfun init() {",
+      "\t\tspace",
+      "\t}",
+      "}"
+    ],
+    "description": "Declare a class inheriting from a parent"
+  },
+  "Class declaration": {
+    "prefix": "class",
+    "body": [
+      "class ${1:Name} {",
+      "\tfun init() {",
+      "\t\tspace",
+      "\t}",
+      "}"
+    ],
+    "description": "Declare a class with constructor"
+  },
+  "Interface declaration": {
+    "prefix": "interface",
+    "body": [
+      "interface ${1:Name} {",
+      "\tfun ${2:method}(${3:params}) -> ${4:type}",
+      "}"
+    ],
+    "description": "Declare an interface"
+  },
+  "Enum declaration": {
+    "prefix": "enum",
+    "body": [
+      "enum ${1:Name} {",
+      "\t${2:Variant}",
+      "}"
+    ],
+    "description": "Declare an enum"
+  },
+  "Exception Handling (sus)": {
+    "prefix": "sus",
+    "body": [
+      "sus {",
+      "\t$0",
+      "} catch e: ${1:Error} {",
+      "\tprint(\"Error: \\${e.message}\\n\")",
+      "}"
+    ],
+    "description": "Try-catch block (sus-catch)"
+  },
+  "Pattern matching (switch)": {
+    "prefix": "switch",
+    "body": [
+      "switch ${1:expr} {",
+      "\t${2:pattern} -> ${3:action},",
+      "\telse -> ${4:default}",
+      "}"
+    ],
+    "description": "Switch pattern matching expression"
+  },
+  "For range loop": {
+    "prefix": "for",
+    "body": [
+      "for ${1:i} in ${2:0}..${3:count} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Iterate through a range"
+  },
+  "While loop": {
+    "prefix": "while",
+    "body": [
+      "while ${1:condition} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "While loop"
+  },
+  "Infinite loop": {
+    "prefix": "loop",
+    "body": [
+      "loop {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Infinite loop"
+  },
+  "Variable declaration": {
+    "prefix": "set",
+    "body": [
+      "set ${1:name}: ${2:type} = ${3:value}"
+    ],
+    "description": "Declare a variable"
+  },
+  "Explicit mutation": {
+    "prefix": "rewrite",
+    "body": [
+      "rewrite ${1:target} = ${2:new_value}"
+    ],
+    "description": "Explicitly mutate a variable or field"
+  },
+  "Load module import": {
+    "prefix": "load",
+    "body": [
+      "load ${1:std.io}: ${2:print}"
+    ],
+    "description": "Import items from a module"
+  },
+  "Print line": {
+    "prefix": "println",
+    "body": [
+      "println(\"${1:message}\")"
+    ],
+    "description": "Print line to stdout"
+  },
+  "Type cast": {
+    "prefix": "cast",
+    "body": [
+      "cast(${1:value}, \"${2:target_type}\")"
+    ],
+    "description": "Explicit type cast intrinsic"
+  },
+  "Macro declaration": {
+    "prefix": "define",
+    "body": [
+      "define ${1:name}(${2:params}) => ${3:expr};"
+    ],
+    "description": "Declare a macro definition"
+  },
+  "Property getter": {
+    "prefix": "get",
+    "body": [
+      "get ${1:name}() -> ${2:type} {",
+      "\treturn this.${3:field}",
+      "}"
+    ],
+    "description": "Declare a property getter in class or struct"
+  },
+  "Property setter": {
+    "prefix": "set_prop",
+    "body": [
+      "set ${1:name}(${2:val}: ${3:type}) {",
+      "\trewrite this.${4:field} = ${2:val}",
+      "}"
+    ],
+    "description": "Declare a property setter in class"
+  },
+  "Operator overload": {
+    "prefix": "operator",
+    "body": [
+      "operator ${1:+(other: Self)} -> ${2:Self} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Overload an operator"
+  },
+  "Defer statement": {
+    "prefix": "defer",
+    "body": [
+      "defer {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Execute block when exiting the enclosing scope"
+  },
+  "Module alias": {
+    "prefix": "alias",
+    "body": [
+      "alias ${1:namespace#symbol} as ${2:name}"
+    ],
+    "description": "Create an alias for a module or type"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "name": "yukino",
+  "displayName": "Yukino",
+  "description": "Language support for the Yukino programming language.",
+  "version": "0.0.1",
+  "publisher": "Yukitsuri",
+  "author": "Yukitsuri",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:yukino"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "yukino",
+        "aliases": [
+          "Yukino",
+          "yukino"
+        ],
+        "extensions": [
+          ".ykn"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "yukino",
+        "scopeName": "source.yukino",
+        "path": "./syntaxes/yukino.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "yukino",
+        "path": "./snippets/yukino.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "yukino.reindexWorkspace",
+        "title": "Yukino: Reindex Workspace Symbols"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  }
+}
