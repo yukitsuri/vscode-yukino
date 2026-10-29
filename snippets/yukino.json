@@ -26,38 +26,6 @@
     ],
     "description": "Declare an exported C ABI function"
   },
-  "Public load import": {
-    "prefix": "pload",
-    "body": [
-      "public load ${1:std.io}: ${2:print}"
-    ],
-    "description": "Public import of module symbols"
-  },
-  "Public function": {
-    "prefix": "pfun",
-    "body": [
-      "public fun ${1:name}(${2:params}) -> ${3:void} {",
-      "\t$0",
-      "}"
-    ],
-    "description": "Public function declaration"
-  },
-  "Public C ABI function": {
-    "prefix": "pcfun",
-    "body": [
-      "|cdecl| public cfun ${1:name}(${2:params}) -> ${3:c_int} {",
-      "\t$0",
-      "}"
-    ],
-    "description": "Public exported C ABI function"
-  },
-  "Public static constant": {
-    "prefix": "pstatic",
-    "body": [
-      "public static ${1:NAME}: ${2:type} = ${3:value}"
-    ],
-    "description": "Public compile-time constant"
-  },
   "Struct declaration": {
     "prefix": "struct",
     "body": [
@@ -66,6 +34,17 @@
       "}"
     ],
     "description": "Declare a value-type struct"
+  },
+  "Class declaration": {
+    "prefix": "class",
+    "body": [
+      "class ${1:Name} {",
+      "\tfun init() {",
+      "\t\tspace",
+      "\t}",
+      "}"
+    ],
+    "description": "Declare a class with constructor"
   },
   "class (alias)": {
     "prefix": "cls",
@@ -110,17 +89,6 @@
       "}"
     ],
     "description": "Declare a class inheriting from a parent"
-  },
-  "Class declaration": {
-    "prefix": "class",
-    "body": [
-      "class ${1:Name} {",
-      "\tfun init() {",
-      "\t\tspace",
-      "\t}",
-      "}"
-    ],
-    "description": "Declare a class with constructor"
   },
   "Interface declaration": {
     "prefix": "interface",
@@ -203,25 +171,121 @@
     "description": "Explicitly mutate a variable or field"
   },
   "Load module import": {
-    "prefix": "load",
+    "prefix": "ld",
     "body": [
       "load ${1:std.io}: ${2:print}"
     ],
     "description": "Import items from a module"
   },
-  "Print line": {
+  "load keyword": {
+    "prefix": "load",
+    "body": "load",
+    "description": "Import statement keyword"
+  },
+  "Println (std.io)": {
     "prefix": "println",
     "body": [
       "println(\"${1:message}\")"
     ],
-    "description": "Print line to stdout"
+    "description": "Print line to stdout (std.io)"
   },
-  "Type cast": {
+  "Print (std.io)": {
+    "prefix": "print",
+    "body": [
+      "print(\"${1:message}\")"
+    ],
+    "description": "Print to stdout without newline (std.io)"
+  },
+  "Eprintln (std.io)": {
+    "prefix": "eprintln",
+    "body": [
+      "eprintln(\"${1:error_message}\")"
+    ],
+    "description": "Print line to stderr (std.io)"
+  },
+  "Type cast intrinsic": {
     "prefix": "cast",
     "body": [
       "cast(${1:value}, \"${2:target_type}\")"
     ],
     "description": "Explicit type cast intrinsic"
+  },
+  "Typeof intrinsic": {
+    "prefix": "typeof",
+    "body": [
+      "typeof(${1:expr})"
+    ],
+    "description": "Compile-time type inspection intrinsic"
+  },
+  "Args intrinsic": {
+    "prefix": "args",
+    "body": [
+      "args()"
+    ],
+    "description": "Command line arguments slice"
+  },
+  "Exit intrinsic": {
+    "prefix": "exit",
+    "body": [
+      "exit(${1:0})"
+    ],
+    "description": "Terminate current process"
+  },
+  "Panic intrinsic": {
+    "prefix": "panic",
+    "body": [
+      "panic(\"${1:message}\")"
+    ],
+    "description": "Abort execution with panic"
+  },
+  "Assert intrinsic": {
+    "prefix": "assert",
+    "body": [
+      "assert(${1:condition})"
+    ],
+    "description": "Assert condition is true"
+  },
+  "Assert Eq intrinsic": {
+    "prefix": "assert_eq",
+    "body": [
+      "assert_eq(${1:actual}, ${2:expected})"
+    ],
+    "description": "Assert equality of two values"
+  },
+  "Ptr of intrinsic": {
+    "prefix": "ptr_of",
+    "body": [
+      "ptr_of(${1:variable})"
+    ],
+    "description": "Get raw memory pointer"
+  },
+  "From raw parts intrinsic": {
+    "prefix": "from_raw_parts",
+    "body": [
+      "from_raw_parts(${1:ptr}, ${2:len})"
+    ],
+    "description": "Construct slice from raw pointer"
+  },
+  "From UTF8 intrinsic": {
+    "prefix": "from_utf8",
+    "body": [
+      "from_utf8(${1:bytes})"
+    ],
+    "description": "Construct string from byte slice"
+  },
+  "Thread spawn (std.threads)": {
+    "prefix": "spawn",
+    "body": [
+      "spawn(${1:task_ptr})"
+    ],
+    "description": "Spawn background OS thread"
+  },
+  "Thread sleep (std.threads)": {
+    "prefix": "sleep",
+    "body": [
+      "sleep(${1:100})"
+    ],
+    "description": "Sleep thread for milliseconds"
   },
   "Macro declaration": {
     "prefix": "define",
@@ -272,5 +336,184 @@
       "alias ${1:namespace#symbol} as ${2:name}"
     ],
     "description": "Create an alias for a module or type"
+  },
+  "public modifier": {
+    "prefix": "public",
+    "body": "public",
+    "description": "Public visibility modifier"
+  },
+  "public load": {
+    "prefix": "pload",
+    "body": "public load ${1:std.io}: ${2:print}",
+    "description": "Public import of module symbols"
+  },
+  "public fun": {
+    "prefix": "pfun",
+    "body": [
+      "public fun ${1:name}(${2:params}) -> ${3:void} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Public function declaration"
+  },
+  "public cfun": {
+    "prefix": "pcfun",
+    "body": [
+      "|cdecl| public cfun ${1:name}(${2:params}) -> ${3:c_int} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Public exported C ABI function"
+  },
+  "public static": {
+    "prefix": "pstatic",
+    "body": "public static ${1:NAME}: ${2:type} = ${3:value}",
+    "description": "Public compile-time constant"
+  },
+  "locked modifier": {
+    "prefix": "locked",
+    "body": [
+      "locked class ${1:Name} {",
+      "\tfun init() {",
+      "\t\tspace",
+      "\t}",
+      "}"
+    ],
+    "description": "Prohibit inheritance from a class"
+  },
+  "externc block": {
+    "prefix": "externc",
+    "body": [
+      "externc \"${1:header.h}\" {",
+      "\tcfun ${2:name}(${3:params}) -> ${4:c_int}",
+      "}"
+    ],
+    "description": "External C declarations block"
+  },
+  "type alias": {
+    "prefix": "type",
+    "body": "type ${1:Name} = ${2:Target}",
+    "description": "Define a type alias"
+  },
+  "elif branch": {
+    "prefix": "elif",
+    "body": [
+      "} elif ${1:condition} {",
+      "\t$0"
+    ],
+    "description": "Alternative branch of an if chain"
+  },
+  "else branch": {
+    "prefix": "else",
+    "body": [
+      "} else {",
+      "\t$0"
+    ],
+    "description": "Fallback branch of an if chain"
+  },
+  "catch clause": {
+    "prefix": "catch",
+    "body": [
+      "} catch ${1:e} {",
+      "\t$0"
+    ],
+    "description": "Catch clause of a sus block"
+  },
+  "finally clause": {
+    "prefix": "finally",
+    "body": [
+      "} finally {",
+      "\t$0"
+    ],
+    "description": "Finally clause of a sus block"
+  },
+  "return": {
+    "prefix": "return",
+    "body": "return",
+    "description": "Return from function"
+  },
+  "break": {
+    "prefix": "break",
+    "body": "break",
+    "description": "Exit the loop"
+  },
+  "continue": {
+    "prefix": "continue",
+    "body": "continue",
+    "description": "Skip to next loop iteration"
+  },
+  "recur": {
+    "prefix": "recur",
+    "body": "recur(${1:args})",
+    "description": "Tail-call recursion jump"
+  },
+  "region block": {
+    "prefix": "region",
+    "body": [
+      "region {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Explicit regional memory scope"
+  },
+  "space placeholder": {
+    "prefix": "space",
+    "body": "space",
+    "description": "Explicit no-op statement"
+  },
+  "this": {
+    "prefix": "this",
+    "body": "this",
+    "description": "Current class instance"
+  },
+  "super": {
+    "prefix": "super",
+    "body": "super",
+    "description": "Base class reference"
+  },
+  "ref": {
+    "prefix": "ref",
+    "body": "ref",
+    "description": "Reference modifier (ref / ref ~)"
+  },
+  "with": {
+    "prefix": "with",
+    "body": "with",
+    "description": "Implement interfaces"
+  },
+  "extends": {
+    "prefix": "extends",
+    "body": "extends",
+    "description": "Inherit from base class"
+  },
+  "is": {
+    "prefix": "is",
+    "body": "is",
+    "description": "Type check operator"
+  },
+  "in": {
+    "prefix": "in",
+    "body": "in",
+    "description": "Iteration separator in for"
+  },
+  "as": {
+    "prefix": "as",
+    "body": "as",
+    "description": "Import alias / cfun symbol override"
+  },
+  "true": {
+    "prefix": "true",
+    "body": "true",
+    "description": "Boolean literal"
+  },
+  "false": {
+    "prefix": "false",
+    "body": "false",
+    "description": "Boolean literal"
+  },
+  "null": {
+    "prefix": "null",
+    "body": "null",
+    "description": "Null literal"
   }
 }

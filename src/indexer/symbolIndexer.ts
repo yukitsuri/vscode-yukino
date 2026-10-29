@@ -206,9 +206,16 @@ export class YukinoSymbolIndexer {
     ]);
 
     let docCommentBuffer: string[] = [];
-    let currentContainer: YukinoSymbol | null = null;
-    let containerBraceDepth = -1;
+    interface ContainerEntry {
+      symbol: YukinoSymbol;
+      braceDepth: number;
+    }
+    const containerStack: ContainerEntry[] = [];
+    const getCurrentContainer = (): YukinoSymbol | null =>
+      containerStack.length > 0 ? containerStack[containerStack.length - 1].symbol : null;
+
     let braceDepth = 0;
+    let parenDepth = 0;
     let pendingFunctionOpen = false;
     const functionBraceDepths: number[] = [];
 
@@ -272,9 +279,17 @@ export class YukinoSymbolIndexer {
       const currentDocComment = docCommentBuffer.length > 0 ? docCommentBuffer.join("\n") : undefined;
       docCommentBuffer = [];
 
-      // Check imports (support public load)
-      const stmt = code.split(";")[0];
-      const loadMatch = stmt.match(/^\s*(?:public\s+)?load\s+([^:]+)(?::\s*(.+))?$/);
+      // Check imports (support multiline load and public load)
+      let loadText = code;
+      if (/^\s*(?:public\s+)?load\b/.test(code)) {
+        let peekIdx = lineIndex;
+        while (!loadText.includes(";") && peekIdx + 1 < lines.length && peekIdx - lineIndex < 20) {
+          peekIdx++;
+          loadText += " " + codeLines[peekIdx].trim();
+        }
+      }
+      const stmt = loadText.split(";")[0];
+      const loadMatch = stmt.match(/^\s*(?:public\s+)?load\s+((?:(?:::)|[^:])+?)(?:\s*(?<!:):(?!:)\s*(.+))?$/);
       if (loadMatch) {
         // '!' is a force-folder marker, not part of the resolved path
         const modPath = loadMatch[1].trim().replace(/!/g, "");
@@ -379,13 +394,27 @@ export class YukinoSymbolIndexer {
           children: []
         };
 
-        symbols.push(sym);
-        currentContainer = sym;
-        containerBraceDepth = -1;
+        const parentContainer = getCurrentContainer();
+        if (parentContainer && parentContainer.children) {
+          parentContainer.children.push(sym);
+        } else {
+          symbols.push(sym);
+        }
+        containerStack.push({ symbol: sym, braceDepth: -1 });
       }
 
       // Check macro declarations: define name(params) => expr or define name(params) { ... }
-      const macroMatch = code.match(/\b(?:public\s+)?define\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([\s\S]*?)\)/);
+      let macroDeclText = code;
+      const macroDeclStart = code.match(/\b(?:public\s+)?define\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/);
+      let macroMatch: RegExpMatchArray | null = null;
+      if (macroDeclStart) {
+        let peekIdx = lineIndex;
+        while (!macroDeclText.includes(")") && peekIdx + 1 < lines.length && peekIdx - lineIndex < 15) {
+          peekIdx++;
+          macroDeclText += " " + codeLines[peekIdx].trim();
+        }
+        macroMatch = macroDeclText.match(/\b(?:public\s+)?define\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([\s\S]*?)\)/);
+      }
       if (macroMatch) {
         const name = macroMatch[1];
         const rawParams = macroMatch[2] || "";
@@ -407,6 +436,7 @@ export class YukinoSymbolIndexer {
           }
         }
 
+        const parentContainer = getCurrentContainer();
         const sym: YukinoSymbol = {
           name,
           kind: "macro",
@@ -416,11 +446,11 @@ export class YukinoSymbolIndexer {
           signature: `define ${name}(${rawParams.replace(/\s+/g, " ").trim()})`,
           parameters: params,
           docComment: currentDocComment,
-          containerName: currentContainer ? currentContainer.name : undefined
+          containerName: parentContainer ? parentContainer.name : undefined
         };
 
-        if (currentContainer && currentContainer.children) {
-          currentContainer.children.push(sym);
+        if (parentContainer && parentContainer.children) {
+          parentContainer.children.push(sym);
         } else {
           symbols.push(sym);
         }
@@ -470,9 +500,10 @@ export class YukinoSymbolIndexer {
           }
         }
 
+        const parentContainer = getCurrentContainer();
         const sym: YukinoSymbol = {
           name,
-          kind: currentContainer ? "method" : (isCfun ? "cfun" : "function"),
+          kind: parentContainer ? "method" : (isCfun ? "cfun" : "function"),
           uri,
           range,
           selectionRange: selRange,
@@ -480,18 +511,28 @@ export class YukinoSymbolIndexer {
           parameters: params,
           returnType,
           docComment: currentDocComment,
-          containerName: currentContainer ? currentContainer.name : undefined
+          containerName: parentContainer ? parentContainer.name : undefined
         };
 
-        if (currentContainer && currentContainer.children) {
-          currentContainer.children.push(sym);
+        if (parentContainer && parentContainer.children) {
+          parentContainer.children.push(sym);
         } else {
           symbols.push(sym);
         }
       }
 
-      // Check operator overloading: operator +(other: Complex) -> Complex
-      const opMatch = code.match(/\boperator\s+([+\-*/%^&|!=<>~\[\]]+)\s*\(([\s\S]*?)\)(?:\s*->\s*([^{;]+))?/);
+      // Operator overloading (with multiline support)
+      let opDeclText = code;
+      const opDeclStart = code.match(/\b(?:public\s+)?(?:operator\s+(?:fun\s+)?|fun\s+operator\s+)([+\-*/%^&|!=<>~\[\]]+)\s*\(/);
+      let opMatch: RegExpMatchArray | null = null;
+      if (opDeclStart) {
+        let peekIdx = lineIndex;
+        while (!opDeclText.includes(")") && peekIdx + 1 < lines.length && peekIdx - lineIndex < 15) {
+          peekIdx++;
+          opDeclText += " " + codeLines[peekIdx].trim();
+        }
+        opMatch = opDeclText.match(/\b(?:public\s+)?(?:operator\s+(?:fun\s+)?|fun\s+operator\s+)([+\-*/%^&|!=<>~\[\]]+)\s*\(([\s\S]*?)\)(?:\s*->\s*([^{;]+))?/);
+      }
       if (opMatch) {
         const opSymbol = opMatch[1];
         const rawParams = opMatch[2] || "";
@@ -515,6 +556,7 @@ export class YukinoSymbolIndexer {
           }
         }
 
+        const parentContainer = getCurrentContainer();
         const sym: YukinoSymbol = {
           name: opName,
           kind: "operator",
@@ -525,18 +567,18 @@ export class YukinoSymbolIndexer {
           parameters: params,
           returnType,
           docComment: currentDocComment,
-          containerName: currentContainer ? currentContainer.name : undefined
+          containerName: parentContainer ? parentContainer.name : undefined
         };
 
-        if (currentContainer && currentContainer.children) {
-          currentContainer.children.push(sym);
+        if (parentContainer && parentContainer.children) {
+          parentContainer.children.push(sym);
         } else {
           symbols.push(sym);
         }
       }
 
-      // Check property getters
-      const getMatch = code.match(/\bget\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(\)\s*->\s*([^{;]+)/);
+      // Property getters
+      const getMatch = code.match(/\b(?:public\s+)?(?:fun\s+)?get\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:\s*\(\))?\s*(?:->|:)\s*([^{;]+)/);
       if (getMatch) {
         const name = getMatch[1];
         const retType = getMatch[2].trim();
@@ -544,6 +586,7 @@ export class YukinoSymbolIndexer {
         const range = new vscode.Range(lineIndex, 0, lineIndex, line.length);
         const selRange = new vscode.Range(lineIndex, col, lineIndex, col + name.length);
 
+        const parentContainer = getCurrentContainer();
         const sym: YukinoSymbol = {
           name,
           kind: "property",
@@ -553,19 +596,30 @@ export class YukinoSymbolIndexer {
           signature: `get ${name}() -> ${retType}`,
           returnType: retType,
           docComment: currentDocComment,
-          containerName: currentContainer ? currentContainer.name : undefined
+          containerName: parentContainer ? parentContainer.name : undefined
         };
 
-        if (currentContainer && currentContainer.children) {
-          currentContainer.children.push(sym);
+        if (parentContainer && parentContainer.children) {
+          parentContainer.children.push(sym);
         } else {
           symbols.push(sym);
         }
       }
 
-      // Check property setters
-      const setPropMatch = code.match(/\bset\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([\s\S]*?)\)/);
-      if (setPropMatch && currentContainer) {
+      // Property setters (with multiline support)
+      let setDeclText = code;
+      const setDeclStart = code.match(/\b(?:public\s+)?(?:fun\s+)?set\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/);
+      let setPropMatch: RegExpMatchArray | null = null;
+      const parentForSet = getCurrentContainer();
+      if (setDeclStart && parentForSet) {
+        let peekIdx = lineIndex;
+        while (!setDeclText.includes(")") && peekIdx + 1 < lines.length && peekIdx - lineIndex < 15) {
+          peekIdx++;
+          setDeclText += " " + codeLines[peekIdx].trim();
+        }
+        setPropMatch = setDeclText.match(/\b(?:public\s+)?(?:fun\s+)?set\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([\s\S]*?)\)/);
+      }
+      if (setPropMatch && parentForSet) {
         const name = setPropMatch[1];
         const rawParams = setPropMatch[2] || "";
         const col = findSymbolCol(code, name);
@@ -595,16 +649,17 @@ export class YukinoSymbolIndexer {
           signature: `set ${name}(${rawParams.replace(/\s+/g, " ").trim()})`,
           parameters: params,
           docComment: currentDocComment,
-          containerName: currentContainer.name
+          containerName: parentForSet.name
         };
 
-        if (currentContainer.children) {
-          currentContainer.children.push(sym);
+        if (parentForSet.children) {
+          parentForSet.children.push(sym);
         }
       }
 
       // Check enum variants with optional inline attributes.
-      if (currentContainer && currentContainer.kind === "enum") {
+      const enumContainer = getCurrentContainer();
+      if (enumContainer && enumContainer.kind === "enum") {
         const codeTrimmed = code.trim().replace(/^(?:(?:#!?\[.*?\]|!#\[.*?\]|\|.*?\|)\s*)+/, "");
         const enumVariantMatch = codeTrimmed.match(/^([a-zA-Z_][a-zA-Z0-9_]*)(?:\s*\((.*?)\))?(?:\s*=\s*([^,;]+))?/);
         if (
@@ -628,19 +683,20 @@ export class YukinoSymbolIndexer {
             selectionRange: selRange,
             signature: vParams ? `${vName}(${vParams.trim()})` : (vVal ? `${vName} = ${vVal.trim()}` : vName),
             docComment: currentDocComment,
-            containerName: currentContainer.name
+            containerName: enumContainer.name
           };
 
-          if (currentContainer.children) {
-            currentContainer.children.push(sym);
+          if (enumContainer.children) {
+            enumContainer.children.push(sym);
           }
         }
       }
 
-      // Check fields in struct or class with optional attributes and complex types.
-      if (currentContainer && currentContainer.kind !== "enum" && !funMatch && !getMatch && !setPropMatch && !opMatch) {
+      // Struct and class field declarations
+      const fieldContainer = getCurrentContainer();
+      if (fieldContainer && fieldContainer.kind !== "enum" && parenDepth === 0 && !funMatch && !getMatch && !setPropMatch && !opMatch) {
         const strippedCode = code.trim().replace(/^(?:(?:#!?\[.*?\]|!#\[.*?\]|\|.*?\|)\s*)+/, "");
-        const fieldMatch = strippedCode.match(/^(?:public\s+)?(?:static\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(.+?)(?:\s*=\s*[^;,]+)?(?:[,;]|\s*$)/);
+        const fieldMatch = strippedCode.match(/^(?:public\s+)?(?:static\s+)?(?:set\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(.+?)(?:\s*=\s*[^;,]+)?(?:[,;]|\s*$)/);
         if (fieldMatch) {
           const name = fieldMatch[1];
           const type = fieldMatch[2].trim();
@@ -657,21 +713,22 @@ export class YukinoSymbolIndexer {
             signature: `${name}: ${type}`,
             returnType: type,
             docComment: currentDocComment,
-            containerName: currentContainer.name
+            containerName: fieldContainer.name
           };
 
-          if (currentContainer.children) {
-            currentContainer.children.push(sym);
+          if (fieldContainer.children) {
+            fieldContainer.children.push(sym);
           }
         }
       }
 
       // Index module-level variables while skipping locals inside function bodies.
+      const varContainer = getCurrentContainer();
       const isInsideFunction = functionBraceDepths.length > 0 || (!!funMatch && code.includes("{"));
       const varMatch = code.match(/\b(set|static)\s+([a-zA-Z_][a-zA-Z0-9_]*)(?!\s*\()\s*(?::\s*([^=;]+))?/);
       if (varMatch && !setPropMatch && !YUKINO_KEYWORD_NAMES.has(varMatch[2])) {
         const isStatic = varMatch[1] === "static";
-        if (isStatic || (!isInsideFunction && !currentContainer)) {
+        if (isStatic || (!isInsideFunction && !varContainer)) {
           const name = varMatch[2];
           const type = varMatch[3]?.trim();
           const col = findSymbolCol(code, name);
@@ -687,11 +744,11 @@ export class YukinoSymbolIndexer {
             signature: `${varMatch[1]} ${name}${type ? `: ${type}` : ""}`,
             returnType: type,
             docComment: currentDocComment,
-            containerName: currentContainer ? currentContainer.name : undefined
+            containerName: varContainer ? varContainer.name : undefined
           };
 
-          if (currentContainer && currentContainer.children) {
-            currentContainer.children.push(sym);
+          if (varContainer && varContainer.children) {
+            varContainer.children.push(sym);
           } else {
             symbols.push(sym);
           }
@@ -702,12 +759,14 @@ export class YukinoSymbolIndexer {
       const openBraces = (code.match(/\{/g) || []).length;
       const closeBraces = (code.match(/\}/g) || []).length;
 
-      if (currentContainer && containerBraceDepth === -1 && openBraces > 0) {
-        containerBraceDepth = braceDepth + 1;
+      for (const entry of containerStack) {
+        if (entry.braceDepth === -1 && openBraces > 0) {
+          entry.braceDepth = braceDepth + 1;
+        }
       }
 
       if (funMatch) {
-        const hasNoBody = funDeclText.includes(";") || currentContainer?.kind === "interface";
+        const hasNoBody = funDeclText.includes(";") || getCurrentContainer()?.kind === "interface";
         if (openBraces > 0) {
           functionBraceDepths.push(braceDepth + 1);
         } else if (!hasNoBody) {
@@ -718,16 +777,24 @@ export class YukinoSymbolIndexer {
         pendingFunctionOpen = false;
       }
 
-      braceDepth += openBraces - closeBraces;
+      const openParens = (code.match(/\(/g) || []).length;
+      const closeParens = (code.match(/\)/g) || []).length;
+      parenDepth = Math.max(0, parenDepth + openParens - closeParens);
+
+      braceDepth = Math.max(0, braceDepth + openBraces - closeBraces);
 
       while (functionBraceDepths.length > 0 && braceDepth < functionBraceDepths[functionBraceDepths.length - 1]) {
         functionBraceDepths.pop();
       }
 
-      if (currentContainer && containerBraceDepth !== -1 && braceDepth < containerBraceDepth) {
-        currentContainer.range = new vscode.Range(currentContainer.range.start, new vscode.Position(lineIndex, line.length));
-        currentContainer = null;
-        containerBraceDepth = -1;
+      while (containerStack.length > 0) {
+        const top = containerStack[containerStack.length - 1];
+        if (top.braceDepth !== -1 && braceDepth < top.braceDepth) {
+          top.symbol.range = new vscode.Range(top.symbol.range.start, new vscode.Position(lineIndex, line.length));
+          containerStack.pop();
+        } else {
+          break;
+        }
       }
     }
 

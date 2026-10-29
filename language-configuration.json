@@ -96,7 +96,7 @@
     }
   },
   "indentationRules": {
-    "increaseIndentPattern": "^.*(\\{[^}\"']*|\\([^)\"']*|\\[[^\\]\"']*|\\b(switch|else|sus|catch|finally|loop)\\b|->)\\s*$",
+    "increaseIndentPattern": "^.*(\\{[^}\"']*|\\([^)\"']*|\\[[^\\]\"']*|\\b(switch|else|sus|catch|finally|loop)\\b|->|=>)\\s*$",
     "decreaseIndentPattern": "^\\s*(\\}|\\)|\\]|\\b(else|elif|catch|finally)\\b)"
   },
   "wordPattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\!\\@\\#\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>\\/\\?\\s]+)"
