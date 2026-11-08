@@ -1,0 +1,209 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Clarity",
+  "scopeName": "source.clarity",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#booleans"
+    },
+    {
+      "include": "#directives"
+    },
+    {
+      "include": "#commands"
+    },
+    {
+      "include": "#flags"
+    },
+    {
+      "include": "#params"
+    },
+    {
+      "include": "#groups"
+    },
+    {
+      "include": "#modifiers"
+    },
+    {
+      "include": "#validators"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.clarity",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.clarity",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.clarity",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.clarity",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.float.clarity",
+          "match": "-?\\b[0-9]+\\.[0-9]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.clarity",
+          "match": "-?\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "booleans": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.clarity",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
+    },
+    "directives": {
+      "patterns": [
+        {
+          "name": "keyword.control.directive.clarity",
+          "match": "\\b(app|version|author|about|default_flags)\\b"
+        }
+      ]
+    },
+    "commands": {
+      "patterns": [
+        {
+          "match": "\\b(define)\\s+([a-zA-Z_][a-zA-Z0-9_-]*)",
+          "captures": {
+            "1": { "name": "keyword.control.command.clarity" },
+            "2": { "name": "entity.name.function.command.clarity" }
+          }
+        },
+        {
+          "name": "keyword.control.command.clarity",
+          "match": "\\b(define|uncommon)\\b"
+        },
+        {
+          "name": "keyword.control.config.clarity",
+          "match": "\\bconfig\\b"
+        }
+      ]
+    },
+    "flags": {
+      "patterns": [
+        {
+          "name": "variable.parameter.flag.long.clarity",
+          "match": "--[a-zA-Z0-9_-]+"
+        },
+        {
+          "name": "variable.parameter.flag.short.clarity",
+          "match": "-[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    },
+    "params": {
+      "patterns": [
+        {
+          "match": "\\b(param)\\s+([a-zA-Z_][a-zA-Z0-9_-]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.param.clarity" },
+            "2": { "name": "variable.parameter.clarity" }
+          }
+        },
+        {
+          "name": "keyword.declaration.param.clarity",
+          "match": "\\bparam\\b"
+        }
+      ]
+    },
+    "groups": {
+      "patterns": [
+        {
+          "match": "\\b(or|and)\\s+([a-zA-Z_][a-zA-Z0-9_-]*)",
+          "captures": {
+            "1": { "name": "keyword.control.group.clarity" },
+            "2": { "name": "entity.name.type.group.clarity" }
+          }
+        },
+        {
+          "name": "keyword.control.group.clarity",
+          "match": "\\b(or|and)\\b"
+        }
+      ]
+    },
+    "modifiers": {
+      "patterns": [
+        {
+          "name": "keyword.other.modifier.clarity",
+          "match": "\\b(env|requires|conflicts|error)\\b"
+        }
+      ]
+    },
+    "validators": {
+      "patterns": [
+        {
+          "name": "keyword.other.validator.clarity",
+          "match": "\\b(range|pattern|min_len|max_len|one_of|exists|parent_exists)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.primitive.clarity",
+          "match": "\\b(bool|count|int32|int|int64|float|float64|string|str|path)\\b"
+        },
+        {
+          "name": "keyword.declaration.enum.clarity",
+          "match": "\\benum\\b"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.bracket.clarity",
+          "match": "[\\{\\}\\[\\]\\(\\)]"
+        },
+        {
+          "name": "punctuation.delimiter.clarity",
+          "match": "[:,;]"
+        },
+        {
+          "name": "keyword.operator.clarity",
+          "match": "[=?*]"
+        }
+      ]
+    }
+  }
+}

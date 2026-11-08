@@ -8,7 +8,7 @@
  */
 export function blankCommentsAndStrings(srcLines: string[]): string[] {
   const result: string[] = [];
-  let inBlockComment = false;
+  let blockCommentDepth = 0;
   let inString = false; // "..."
   let inTriple = false; // """..."""
   let inChar = false; // '...'
@@ -28,11 +28,16 @@ export function blankCommentsAndStrings(srcLines: string[]): string[] {
       const next = i + 1 < chars.length ? chars[i + 1] : "";
       const third = i + 2 < chars.length ? chars[i + 2] : "";
 
-      if (inBlockComment) {
-        if (c === "*" && next === "/") {
+      if (blockCommentDepth > 0) {
+        if (c === "/" && next === "*") {
           blankAt(i);
           blankAt(i + 1);
-          inBlockComment = false;
+          blockCommentDepth++;
+          i += 2;
+        } else if (c === "*" && next === "/") {
+          blankAt(i);
+          blankAt(i + 1);
+          blockCommentDepth--;
           i += 2;
         } else {
           blankAt(i);
@@ -88,7 +93,7 @@ export function blankCommentsAndStrings(srcLines: string[]): string[] {
         } else if (c === "/" && next === "*") {
           blankAt(i);
           blankAt(i + 1);
-          inBlockComment = true;
+          blockCommentDepth = 1;
           i += 2;
         } else if (c === '"' && next === '"' && third === '"') {
           blankAt(i);

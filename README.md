@@ -4,6 +4,15 @@ Yukino language support extension for Visual Studio Code.
 
 Provides syntax highlighting, snippets, workspace symbol indexing, definition provider, hover tooltips, autocompletion, and diagnostics for Yukino (`.ykn`).
 
+## Tests
+
+```sh
+npm install
+npm test
+```
+
+Tests cover TextMate scopes for complete numeric literals, nested comments and regional keywords, along with symbol indexing, imported aliases, snippets, diagnostics, and keyword documentation.
+
 ## Building & Installation
 
 To build and install locally:

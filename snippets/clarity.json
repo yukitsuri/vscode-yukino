@@ -1,0 +1,83 @@
+{
+  "App header": {
+    "prefix": "app",
+    "body": [
+      "app \"${1:name}\"",
+      "version \"${2:0.1.0}\"",
+      "about \"${3:Description}\"",
+      "$0"
+    ],
+    "description": "Clarity app metadata header"
+  },
+  "Command definition": {
+    "prefix": "define",
+    "body": [
+      "define ${1:name} \"${2:Description}\" {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Define a CLI subcommand"
+  },
+  "Common flags block": {
+    "prefix": "define*",
+    "body": [
+      "define * {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Define global flags shared across subcommands"
+  },
+  "Flag definition": {
+    "prefix": "flag",
+    "body": [
+      "--${1:name}, -${2:s}: ${3:string} = ${4:\"default\"} \"${5:description}\";$0"
+    ],
+    "description": "Define a CLI option flag"
+  },
+  "Boolean flag": {
+    "prefix": "boolflag",
+    "body": [
+      "--${1:name}, -${2:s}: bool = false \"${3:description}\";$0"
+    ],
+    "description": "Define a boolean switch flag"
+  },
+  "Count flag": {
+    "prefix": "countflag",
+    "body": [
+      "--${1:verbose}, -${2:v}: count \"${3:Verbosity level}\";$0"
+    ],
+    "description": "Define a repeat counter flag"
+  },
+  "Param definition": {
+    "prefix": "param",
+    "body": [
+      "param ${1:name}: ${2:string} = ${3:\"default\"} \"${4:description}\";$0"
+    ],
+    "description": "Define a positional argument"
+  },
+  "Mutually exclusive group": {
+    "prefix": "or",
+    "body": [
+      "or ${1:name} ? {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Define mutually exclusive option group"
+  },
+  "Co-dependent group": {
+    "prefix": "and",
+    "body": [
+      "and ${1:name} ? {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Define co-dependent option group"
+  },
+  "Enum choice type": {
+    "prefix": "enum",
+    "body": [
+      "enum { ${1:choice1}, ${2:choice2} }$0"
+    ],
+    "description": "Define an enum choice type"
+  }
+}

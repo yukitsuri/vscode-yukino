@@ -15,7 +15,8 @@
   ],
   "main": "./out/extension.js",
   "activationEvents": [
-    "onLanguage:yukino"
+    "onLanguage:yukino",
+    "onLanguage:clarity"
   ],
   "contributes": {
     "languages": [
@@ -29,6 +30,17 @@
           ".ykn"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "clarity",
+        "aliases": [
+          "Clarity",
+          "clarity"
+        ],
+        "extensions": [
+          ".cty"
+        ],
+        "configuration": "./clarity-configuration.json"
       }
     ],
     "grammars": [
@@ -36,12 +48,21 @@
         "language": "yukino",
         "scopeName": "source.yukino",
         "path": "./syntaxes/yukino.tmLanguage.json"
+      },
+      {
+        "language": "clarity",
+        "scopeName": "source.clarity",
+        "path": "./syntaxes/clarity.tmLanguage.json"
       }
     ],
     "snippets": [
       {
         "language": "yukino",
         "path": "./snippets/yukino.json"
+      },
+      {
+        "language": "clarity",
+        "path": "./snippets/clarity.json"
       }
     ],
     "commands": [
@@ -54,11 +75,15 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node --test test/*.test.js"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.85.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
   }
 }

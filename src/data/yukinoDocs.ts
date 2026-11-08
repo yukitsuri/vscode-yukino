@@ -267,8 +267,8 @@ export const YUKINO_KEYWORDS: Record<string, KeywordDoc> = {
     name: "region",
     category: "memory",
     summary: "Explicit regional memory allocation scope.",
-    description: "Allocates objects within a bounded region that is freed all at once.",
-    example: "region {\n    set temp = ComplexObject()\n}"
+    description: "Allocates objects within a bounded region that is freed all at once. In `for region`, `while region`, and `loop region`, temporary memory is reset after each iteration, including `break` and `continue`. Temporary references must not escape the iteration.",
+    example: "region {\n    set temp = ComplexObject()\n}\n\nfor region i in 0..10 {\n    set message = \"item_${i}\"\n    send_message(message)\n}"
   },
   if: {
     name: "if",
@@ -295,15 +295,15 @@ export const YUKINO_KEYWORDS: Record<string, KeywordDoc> = {
     name: "while",
     category: "control",
     summary: "Loop that repeats while a condition holds.",
-    description: "Re-evaluates the condition before each iteration.",
-    example: "while i < 10 {\n    rewrite i += 1\n}"
+    description: "Re-evaluates the condition before each iteration. `while region` resets temporary memory after each iteration, including `break` and `continue`.",
+    example: "while i < 10 {\n    rewrite i += 1\n}\n\nwhile region reader.has_next() {\n    process_line(reader.read_line())\n}"
   },
   for: {
     name: "for",
     category: "control",
     summary: "Iteration loop over a range, slice, or iterable.",
-    description: "Iterates `variable` over `iterable` (ranges like `0..n`, slices, etc.). Supports an optional label for `break label`/`continue label`.",
-    example: "for i in 0..10 {\n    print(\"${i}\")\n}"
+    description: "Iterates `variable` over `iterable` (ranges like `0..n`, slices, etc.). Supports `index, item` bindings and an optional label for `break label`/`continue label`. `for region` resets temporary memory after each iteration, including `break` and `continue`.",
+    example: "for i in 0..10 {\n    print(\"${i}\")\n}\n\nfor region i, item in items {\n    store_output(i, transform(item))\n}"
   },
   in: {
     name: "in",
@@ -316,8 +316,8 @@ export const YUKINO_KEYWORDS: Record<string, KeywordDoc> = {
     name: "loop",
     category: "control",
     summary: "Infinite loop.",
-    description: "Repeats the body forever until a `break` is executed.",
-    example: "loop {\n    break\n}"
+    description: "Repeats the body forever until a `break` is executed. `loop region` resets temporary memory after each iteration, including `break` and `continue`.",
+    example: "loop {\n    break\n}\n\nloop region {\n    set event = poll_event()\n    if event.is_exit() { break }\n    handle_event(event)\n}"
   },
   break: {
     name: "break",

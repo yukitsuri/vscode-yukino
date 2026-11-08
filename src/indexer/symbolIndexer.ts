@@ -83,6 +83,21 @@ export class YukinoSymbolIndexer {
     return this.fileImports.get(uri.fsPath) || [];
   }
 
+  private getImportedTargets(name: string, currentUri: vscode.Uri): Set<string> {
+    const targets = new Set<string>();
+    for (const itemImport of this.getImportsForFile(currentUri)) {
+      for (const symbol of itemImport.symbols) {
+        if (symbol.alias === name) {
+          targets.add(symbol.name);
+        }
+      }
+    }
+    if (targets.size === 0) {
+      targets.add(name);
+    }
+    return targets;
+  }
+
   public findDefinitions(name: string, currentUri: vscode.Uri): vscode.Location[] {
     const locations: vscode.Location[] = [];
     const cleanName = name.replace(/!$/, "");
@@ -108,17 +123,18 @@ export class YukinoSymbolIndexer {
     }
 
     // 2. Search across other indexed workspace files
+    const importedTargets = this.getImportedTargets(cleanName, currentUri);
     for (const [fsPath, syms] of this.fileSymbols.entries()) {
       if (fsPath === currentUri.fsPath) {
         continue;
       }
       for (const sym of syms) {
-        if (matches(sym.name)) {
+        if (importedTargets.has(sym.name)) {
           locations.push(new vscode.Location(sym.uri, sym.selectionRange));
         }
         if (sym.children) {
           for (const child of sym.children) {
-            if (matches(child.name)) {
+            if (importedTargets.has(child.name)) {
               locations.push(new vscode.Location(child.uri, child.selectionRange));
             }
           }
@@ -149,14 +165,17 @@ export class YukinoSymbolIndexer {
       }
     }
 
+    const importedTargets = currentUri
+      ? this.getImportedTargets(cleanName, currentUri)
+      : new Set([cleanName]);
     for (const syms of this.fileSymbols.values()) {
       for (const sym of syms) {
-        if (matches(sym.name)) {
+        if (importedTargets.has(sym.name)) {
           return sym;
         }
         if (sym.children) {
           for (const child of sym.children) {
-            if (matches(child.name)) {
+            if (importedTargets.has(child.name)) {
               return child;
             }
           }
@@ -224,10 +243,10 @@ export class YukinoSymbolIndexer {
       let current = "";
       let depth = 0;
       for (const char of raw) {
-        if (char === "<" || char === "(" || char === "[") {
+        if (char === "<" || char === "(" || char === "[" || char === "{") {
           depth++;
           current += char;
-        } else if (char === ">" || char === ")" || char === "]") {
+        } else if (char === ">" || char === ")" || char === "]" || char === "}") {
           depth = Math.max(0, depth - 1);
           current += char;
         } else if (char === "," && depth === 0) {
@@ -243,6 +262,21 @@ export class YukinoSymbolIndexer {
         result.push(current.trim());
       }
       return result;
+    };
+
+    const findClosingParen = (value: string, openIndex: number): number => {
+      let depth = 0;
+      for (let i = openIndex; i < value.length; i++) {
+        if (value[i] === "(") {
+          depth++;
+        } else if (value[i] === ")") {
+          depth--;
+          if (depth === 0) {
+            return i;
+          }
+        }
+      }
+      return -1;
     };
 
     const findSymbolCol = (lineStr: string, name: string): number => {
@@ -458,29 +492,48 @@ export class YukinoSymbolIndexer {
 
       // Check functions (top-level or method, with optional generics and multiline support)
       let funDeclText = code;
+      let funDeclRaw = line;
       const funDeclStart = code.match(
-        /\b(?:public\s+)?(?:static\s+)?(fun|cfun)\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:<[^>]+>)?\s*\(/
+        /\b(?:public\s+)?(?:static\s+)?(fun|cfun)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:<([^>]+)>\s*)?\(/
       );
 
-      let funMatch: RegExpMatchArray | null = null;
+      let funMatch: {
+        kind: "fun" | "cfun";
+        name: string;
+        typeParams?: string;
+        rawParams: string;
+        returnType?: string;
+      } | null = null;
       if (funDeclStart) {
+        const openParen = (funDeclStart.index ?? 0) + funDeclStart[0].lastIndexOf("(");
+        let closeParen = findClosingParen(funDeclText, openParen);
         let peekIdx = lineIndex;
-        while (!funDeclText.includes(")") && peekIdx + 1 < lines.length && peekIdx - lineIndex < 15) {
+        while (closeParen < 0 && peekIdx + 1 < lines.length && peekIdx - lineIndex < 15) {
           peekIdx++;
-          funDeclText += " " + codeLines[peekIdx].trim();
+          funDeclText += "\n" + codeLines[peekIdx];
+          funDeclRaw += "\n" + lines[peekIdx];
+          closeParen = findClosingParen(funDeclText, openParen);
         }
 
-        funMatch = funDeclText.match(
-          /\b(?:public\s+)?(?:static\s+)?(fun|cfun)\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:<([^>]+)>)?\s*\(([\s\S]*?)\)(?:\s*->\s*([^{;]+))?/
-        );
+        if (closeParen >= 0) {
+          const afterParams = funDeclText.slice(closeParen + 1);
+          const returnMatch = afterParams.match(/^\s*->\s*([^{;\n]+)/);
+          funMatch = {
+            kind: funDeclStart[1] as "fun" | "cfun",
+            name: funDeclStart[2],
+            typeParams: funDeclStart[3],
+            rawParams: funDeclRaw.slice(openParen + 1, closeParen),
+            returnType: returnMatch?.[1].trim()
+          };
+        }
       }
 
       if (funMatch) {
-        const isCfun = funMatch[1] === "cfun";
-        const name = funMatch[2];
-        const typeParams = funMatch[3];
-        const rawParams = funMatch[4] || "";
-        const returnType = (funMatch[5] || "void").trim();
+        const isCfun = funMatch.kind === "cfun";
+        const name = funMatch.name;
+        const typeParams = funMatch.typeParams;
+        const rawParams = funMatch.rawParams;
+        const returnType = funMatch.returnType || "void";
         const col = findSymbolCol(code, name);
         const range = new vscode.Range(lineIndex, 0, lineIndex, line.length);
         const selRange = new vscode.Range(lineIndex, col, lineIndex, col + name.length);
@@ -507,7 +560,7 @@ export class YukinoSymbolIndexer {
           uri,
           range,
           selectionRange: selRange,
-          signature: `${funMatch[1]} ${name}${typeParams ? `<${typeParams}>` : ""}(${rawParams.replace(/\s+/g, " ").trim()})${returnType ? ` -> ${returnType}` : ""}`.trim(),
+          signature: `${funMatch.kind} ${name}${typeParams ? `<${typeParams}>` : ""}(${rawParams.replace(/\s+/g, " ").trim()})${returnType ? ` -> ${returnType}` : ""}`.trim(),
           parameters: params,
           returnType,
           docComment: currentDocComment,
@@ -694,7 +747,7 @@ export class YukinoSymbolIndexer {
 
       // Struct and class field declarations
       const fieldContainer = getCurrentContainer();
-      if (fieldContainer && fieldContainer.kind !== "enum" && parenDepth === 0 && !funMatch && !getMatch && !setPropMatch && !opMatch) {
+      if (fieldContainer && fieldContainer.kind !== "enum" && functionBraceDepths.length === 0 && parenDepth === 0 && !funMatch && !getMatch && !setPropMatch && !opMatch) {
         const strippedCode = code.trim().replace(/^(?:(?:#!?\[.*?\]|!#\[.*?\]|\|.*?\|)\s*)+/, "");
         const fieldMatch = strippedCode.match(/^(?:public\s+)?(?:static\s+)?(?:set\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(.+?)(?:\s*=\s*[^;,]+)?(?:[,;]|\s*$)/);
         if (fieldMatch) {
