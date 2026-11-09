@@ -1,6 +1,6 @@
 # vscode-yukino
 
-Yukino language support extension for Visual Studio Code.
+[Yukino](https://github.com/yukitsuri/yukino) language support extension for Visual Studio Code.
 
 Provides syntax highlighting, snippets, workspace symbol indexing, definition provider, hover tooltips, autocompletion, and diagnostics for Yukino (`.ykn`).
 
