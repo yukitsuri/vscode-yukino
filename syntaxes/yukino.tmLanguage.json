@@ -1,0 +1,780 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Yukino",
+  "scopeName": "source.yukino",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#attributes"
+    },
+    {
+      "include": "#characters"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#imports"
+    },
+    {
+      "include": "#macro-declarations"
+    },
+    {
+      "include": "#class-declarations"
+    },
+    {
+      "include": "#function-declarations"
+    },
+    {
+      "include": "#lambda-expressions"
+    },
+    {
+      "include": "#keywords-modifiers"
+    },
+    {
+      "include": "#keywords-storage"
+    },
+    {
+      "include": "#keywords-control"
+    },
+    {
+      "include": "#keywords-other"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#variables-language"
+    },
+    {
+      "include": "#builtin-functions"
+    },
+    {
+      "include": "#macro-calls"
+    },
+    {
+      "include": "#member-calls"
+    },
+    {
+      "include": "#function-calls"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#struct-fields"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.documentation.yukino",
+          "match": "///.*$"
+        },
+        {
+          "name": "comment.line.double-slash.yukino",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.yukino",
+          "begin": "/\\*",
+          "end": "\\*/",
+          "patterns": [
+            {
+              "include": "#comments"
+            }
+          ]
+        }
+      ]
+    },
+    "attributes": {
+      "patterns": [
+        {
+          "name": "meta.attribute.compiler.yukino",
+          "begin": "(#!?\\[|!#\\[)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.attribute.yukino"
+            }
+          },
+          "end": "\\]",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.attribute.yukino"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#comments"
+            },
+            {
+              "include": "#strings"
+            },
+            {
+              "include": "#numbers"
+            },
+            {
+              "name": "punctuation.separator.comma.yukino",
+              "match": ","
+            },
+            {
+              "name": "keyword.operator.yukino",
+              "match": "="
+            },
+            {
+              "name": "punctuation.separator.colon.double.yukino",
+              "match": "::"
+            },
+            {
+              "name": "entity.other.attribute-name.compiler.yukino",
+              "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+            }
+          ]
+        },
+        {
+          "name": "meta.attribute.cabi.yukino",
+          "begin": "(?<=^\\s*(?:(?:public|locked|static)\\s+)?)\\|(?=[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*[,=\\(]|\\|))",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.attribute.yukino"
+            }
+          },
+          "end": "\\|",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.attribute.yukino"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#comments"
+            },
+            {
+              "include": "#numbers"
+            },
+            {
+              "include": "#strings"
+            },
+            {
+              "name": "keyword.operator.yukino",
+              "match": "="
+            },
+            {
+              "name": "punctuation.separator.yukino",
+              "match": ","
+            },
+            {
+              "name": "entity.other.attribute-name.cabi.yukino",
+              "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+            }
+          ]
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.triple.yukino",
+          "begin": "\"\"\"",
+          "end": "\"\"\"",
+          "patterns": [
+            {
+              "include": "#string-interpolation"
+            },
+            {
+              "include": "#string-escapes"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.double.yukino",
+          "begin": "\"",
+          "end": "\"|(?=\\n)",
+          "patterns": [
+            {
+              "include": "#string-interpolation"
+            },
+            {
+              "include": "#string-escapes"
+            }
+          ]
+        }
+      ]
+    },
+    "string-interpolation": {
+      "patterns": [
+        {
+          "name": "meta.interpolation.yukino",
+          "begin": "\\$\\{",
+          "end": "\\}",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.template-expression.begin.yukino"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.template-expression.end.yukino"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#interpolation-inner"
+            },
+            {
+              "include": "$self"
+            }
+          ]
+        }
+      ]
+    },
+    "interpolation-inner": {
+      "patterns": [
+        {
+          "begin": "\\{",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.block.yukino"
+            }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.block.yukino"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#interpolation-inner"
+            },
+            {
+              "include": "$self"
+            }
+          ]
+        }
+      ]
+    },
+    "string-escapes": {
+      "patterns": [
+        {
+          "name": "constant.character.escape.unicode.yukino",
+          "match": "\\\\u\\{[0-9a-fA-F]+\\}"
+        },
+        {
+          "name": "constant.character.escape.hex.yukino",
+          "match": "\\\\x[0-9a-fA-F]{2}"
+        },
+        {
+          "name": "constant.character.escape.common.yukino",
+          "match": "\\\\[nrt0\\\\'\"]"
+        },
+        {
+          "name": "invalid.illegal.escape.yukino",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "characters": {
+      "patterns": [
+        {
+          "name": "string.quoted.single.character.yukino",
+          "match": "'(?:\\\\[nrt0\\\\'\"]|\\\\x[0-9a-fA-F]{2}|\\\\u\\{[0-9a-fA-F]+\\}|[^'\\\\\n])'"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.yukino",
+          "match": "\\b0[xX][0-9a-fA-F_]*[0-9a-fA-F](?:i8|i16|i32|i64|u8|u16|u32|u64|isize|usize)?\\b"
+        },
+        {
+          "name": "constant.numeric.binary.yukino",
+          "match": "\\b0[bB][01_]*[01](?:i8|i16|i32|i64|u8|u16|u32|u64|isize|usize)?\\b"
+        },
+        {
+          "name": "constant.numeric.octal.yukino",
+          "match": "\\b0[oO][0-7_]*[0-7](?:i8|i16|i32|i64|u8|u16|u32|u64|isize|usize)?\\b"
+        },
+        {
+          "name": "constant.numeric.float.yukino",
+          "match": "\\b[0-9][0-9_]*(?:(?:\\.[0-9][0-9_]*)(?:[eE][+-]?[0-9_]*[0-9][0-9_]*)?|[eE][+-]?[0-9_]*[0-9][0-9_]*)(?:f32|f64)?\\b|\\b[0-9][0-9_]*(?:f32|f64)\\b"
+        },
+        {
+          "name": "constant.numeric.decimal.yukino",
+          "match": "\\b[0-9][0-9_]*(?:i8|i16|i32|i64|u8|u16|u32|u64|isize|usize)?\\b"
+        }
+      ]
+    },
+    "imports": {
+      "begin": "(?:\\b(public)\\s+)?\\b(load)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "storage.modifier.yukino"
+        },
+        "2": {
+          "name": "keyword.control.import.yukino"
+        }
+      },
+      "end": "$|;",
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "begin": ":",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.separator.colon.yukino"
+            }
+          },
+          "end": "(?=$|;)",
+          "patterns": [
+            {
+              "include": "#comments"
+            },
+            {
+              "name": "punctuation.separator.comma.yukino",
+              "match": ","
+            },
+            {
+              "name": "keyword.operator.wildcard.yukino",
+              "match": "\\*"
+            },
+            {
+              "name": "keyword.other.alias.yukino",
+              "match": "\\bas\\b"
+            },
+            {
+              "name": "entity.name.type.class.yukino",
+              "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+            },
+            {
+              "name": "entity.name.function.yukino",
+              "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+            }
+          ]
+        },
+        {
+          "name": "punctuation.separator.dot.yukino",
+          "match": "\\.\\.\\.|\\.\\.|\\."
+        },
+        {
+          "name": "keyword.operator.folder.yukino",
+          "match": "!"
+        },
+        {
+          "name": "keyword.operator.wildcard.yukino",
+          "match": "\\*"
+        },
+        {
+          "name": "entity.name.namespace.yukino",
+          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    },
+    "macro-declarations": {
+      "patterns": [
+        {
+          "match": "\\b(define)\\s+([a-zA-Z_][a-zA-Z0-9_]*)(!)?",
+          "captures": {
+            "1": {
+              "name": "keyword.other.macro.yukino"
+            },
+            "2": {
+              "name": "entity.name.function.macro.yukino"
+            },
+            "3": {
+              "name": "keyword.operator.macro.yukino"
+            }
+          }
+        }
+      ]
+    },
+    "class-declarations": {
+      "patterns": [
+        {
+          "match": "(?:\\b(public|locked)\\s+)?\\b(class|struct|cstruct|interface|enum)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.yukino"
+            },
+            "2": {
+              "name": "storage.type.class.yukino"
+            },
+            "3": {
+              "name": "entity.name.type.class.yukino"
+            }
+          }
+        }
+      ]
+    },
+    "function-declarations": {
+      "patterns": [
+        {
+          "match": "(?:\\b(public|static|externc)\\s+)?\\b(fun|cfun)\\s+(init)\\b",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.yukino"
+            },
+            "2": {
+              "name": "storage.type.function.yukino"
+            },
+            "3": {
+              "name": "entity.name.function.constructor.yukino"
+            }
+          }
+        },
+        {
+          "match": "(?:\\b(public|static|externc)\\s+)?\\b(fun|cfun)\\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:\\s*<[^>]+>)?",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.yukino"
+            },
+            "2": {
+              "name": "storage.type.function.yukino"
+            },
+            "3": {
+              "name": "entity.name.function.yukino"
+            }
+          }
+        }
+      ]
+    },
+    "lambda-expressions": {
+      "patterns": [
+        {
+          "match": "\\b(fun)\\s*(?:<[^>]+>)?\\s*(?=\\()",
+          "captures": {
+            "1": {
+              "name": "storage.type.function.yukino"
+            }
+          }
+        },
+        {
+          "match": "(=>)",
+          "captures": {
+            "1": {
+              "name": "keyword.operator.arrow.fat.yukino"
+            }
+          }
+        }
+      ]
+    },
+    "keywords-modifiers": {
+      "patterns": [
+        {
+          "name": "storage.modifier.yukino",
+          "match": "\\b(public|locked|static|externc|ref|get|mut)\\b"
+        }
+      ]
+    },
+    "keywords-storage": {
+      "patterns": [
+        {
+          "name": "storage.type.variable.yukino",
+          "match": "\\b(set|rewrite)\\b"
+        },
+        {
+          "name": "storage.type.function.yukino",
+          "match": "\\b(fun|cfun)\\b"
+        },
+        {
+          "name": "storage.type.class.yukino",
+          "match": "\\b(class|struct|cstruct|interface|enum)\\b"
+        },
+        {
+          "name": "storage.type.type.yukino",
+          "match": "\\b(type)\\b"
+        }
+      ]
+    },
+    "keywords-control": {
+      "patterns": [
+        {
+          "name": "keyword.control.conditional.yukino",
+          "match": "\\b(if|elif|else)\\b"
+        },
+        {
+          "name": "keyword.control.repeat.yukino",
+          "match": "\\b(while|for|in|loop)\\b"
+        },
+        {
+          "name": "keyword.control.flow.yukino",
+          "match": "\\b(break|continue)\\b"
+        },
+        {
+          "name": "keyword.control.flow.return.yukino",
+          "match": "\\b(return|recur)\\b"
+        },
+        {
+          "name": "keyword.control.switch.yukino",
+          "match": "\\b(switch)\\b"
+        },
+        {
+          "name": "keyword.control.exception.yukino",
+          "match": "\\b(sus|catch|finally)\\b"
+        },
+        {
+          "name": "keyword.control.defer.yukino",
+          "match": "\\b(defer)\\b"
+        },
+        {
+          "name": "keyword.control.region.yukino",
+          "match": "\\b(region)\\b"
+        }
+      ]
+    },
+    "keywords-other": {
+      "patterns": [
+        {
+          "name": "keyword.other.macro.yukino",
+          "match": "\\b(define)\\b"
+        },
+        {
+          "name": "keyword.other.alias.yukino",
+          "match": "\\b(alias)\\b"
+        },
+        {
+          "name": "keyword.other.operator.yukino",
+          "match": "\\b(operator)\\b"
+        },
+        {
+          "name": "entity.name.function.constructor.yukino",
+          "match": "\\b(init)(?=\\s*\\()\\b"
+        },
+        {
+          "name": "keyword.other.init.yukino",
+          "match": "\\b(init)\\b"
+        },
+        {
+          "name": "keyword.other.yukino",
+          "match": "\\b(with|extends|is|as)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.yukino",
+          "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "constant.language.null.yukino",
+          "match": "\\b(null)\\b"
+        },
+        {
+          "name": "constant.language.space.yukino",
+          "match": "\\b(space)\\b"
+        }
+      ]
+    },
+    "variables-language": {
+      "patterns": [
+        {
+          "name": "variable.language.super.yukino",
+          "match": "\\bsuper\\b"
+        }
+      ]
+    },
+    "builtin-functions": {
+      "patterns": [
+        {
+          "name": "support.function.builtin.yukino",
+          "match": "\\b(cast|panic|typeof|exit|args|raw_args|assert|ptr_of|from_raw_parts)\\b"
+        }
+      ]
+    },
+    "macro-calls": {
+      "patterns": [
+        {
+          "match": "\\b(file|line|col|hostenv|get_target|get_yukic_version|yukienv|get_profileconfig|get_features|is_lib_connected|include_str|include_strings|include_bytes|compile_error|cfg|compile_print)(!)(?=\\s*[\\(\\[\\{])",
+          "captures": {
+            "1": {
+              "name": "support.function.macro.builtin.yukino"
+            },
+            "2": {
+              "name": "keyword.operator.macro.yukino"
+            }
+          }
+        },
+        {
+          "match": "\\b((?:[a-zA-Z_][a-zA-Z0-9_]*::)*[a-zA-Z_][a-zA-Z0-9_]*)(!)(?=\\s*[\\(\\[\\{])",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.macro.yukino"
+            },
+            "2": {
+              "name": "keyword.operator.macro.yukino"
+            }
+          }
+        }
+      ]
+    },
+    "member-calls": {
+      "patterns": [
+        {
+          "match": "(?<=\\.)([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.member.yukino"
+            }
+          }
+        }
+      ]
+    },
+    "member-access": {
+      "patterns": [
+        {
+          "match": "(?<=\\.)([a-zA-Z_][a-zA-Z0-9_]*)(?!\\s*\\()",
+          "captures": {
+            "1": {
+              "name": "variable.other.property.yukino"
+            }
+          }
+        }
+      ]
+    },
+    "function-calls": {
+      "patterns": [
+        {
+          "match": "\\b(?!(?:if|elif|else|while|for|in|loop|switch|sus|catch|finally|return|recur|load|public|set|rewrite|static|fun|cfun|class|struct|interface|enum|type|define|init)\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.call.yukino"
+            }
+          }
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type.primitive.yukino",
+          "match": "\\b(int8|int16|int32|int64|uint8|uint16|uint32|uint64|float32|float64|bool|char|void|never|string|bytes|c_char|c_int|c_size_t|c_void|c_long|c_short|c_uint|usize|isize)\\b"
+        },
+        {
+          "name": "support.type.builtin.yukino",
+          "match": "\\b(ptr|map|vec|slice|Arena)\\b"
+        },
+        {
+          "name": "entity.name.type.class.yukino",
+          "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    },
+    "struct-fields": {
+      "patterns": [
+        {
+          "match": "^\\s*(?:\\b(public)\\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)(?![:=])",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.yukino"
+            },
+            "2": {
+              "name": "variable.other.yukino"
+            },
+            "3": {
+              "name": "punctuation.separator.colon.yukino"
+            }
+          }
+        },
+        {
+          "match": "\\b(?!(?:default|case|return|load|set|rewrite)\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)(?![:=])",
+          "captures": {
+            "1": {
+              "name": "variable.other.yukino"
+            },
+            "2": {
+              "name": "punctuation.separator.colon.yukino"
+            }
+          }
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.null-coalescing.yukino",
+          "match": "\\?\\?"
+        },
+        {
+          "name": "keyword.operator.safe-navigation.yukino",
+          "match": "\\?\\."
+        },
+        {
+          "name": "keyword.operator.ternary.yukino",
+          "match": "\\?"
+        },
+        {
+          "name": "keyword.operator.arrow.yukino",
+          "match": "->|=>"
+        },
+        {
+          "name": "keyword.operator.range.yukino",
+          "match": "\\.\\.="
+        },
+        {
+          "name": "keyword.operator.range.yukino",
+          "match": "\\.\\."
+        },
+        {
+          "name": "keyword.operator.double-colon.yukino",
+          "match": "::"
+        },
+        {
+          "name": "keyword.operator.comparison.yukino",
+          "match": "==|!=|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.assignment.yukino",
+          "match": "\\+=|-=|\\*\\*=|\\*=|/=|%=|&=|\\|=|\\^=|<<=|>>=|="
+        },
+        {
+          "name": "keyword.operator.arithmetic.yukino",
+          "match": "\\*\\*|\\+|-|\\*|/|%"
+        },
+        {
+          "name": "keyword.operator.logical.yukino",
+          "match": "&&|\\|\\||!"
+        },
+        {
+          "name": "keyword.operator.bitwise.yukino",
+          "match": "&|\\||\\^|~|<<|>>"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.comma.yukino",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.semicolon.yukino",
+          "match": ";"
+        },
+        {
+          "name": "punctuation.separator.colon.yukino",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.separator.dot.yukino",
+          "match": "\\."
+        }
+      ]
+    }
+  }
+}

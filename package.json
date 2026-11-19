@@ -1,0 +1,185 @@
+{
+  "name": "yukinolsp",
+  "displayName": "Yukino LSP",
+  "description": "Comprehensive language support for Yukino with LSP, syntax highlighting, and formatting.",
+  "version": "0.2.1",
+  "publisher": "shareui",
+  "author": "Yukitsuri <shareui@proton.me>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yukitsuri/vscode-yukino"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Snippets"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:yukino",
+    "onCommand:yukino.restartServer",
+    "onCommand:yukino.runMain",
+    "onCommand:yukino.runFile",
+    "onCommand:yukino.runTest",
+    "onCommand:yukino.testAll",
+    "onCommand:yukino.build",
+    "onCommand:yukino.check",
+    "onCommand:yukino.showDoc",
+    "onCommand:yukino.showMenu",
+    "workspaceContains:**/*.ykn"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "yukino",
+        "aliases": [
+          "Yukino",
+          "yukino"
+        ],
+        "extensions": [
+          ".ykn"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "yukino",
+        "scopeName": "source.yukino",
+        "path": "./syntaxes/yukino.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "yukino",
+        "path": "./snippets/yukino.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Yukino",
+      "properties": {
+        "yukino.server.path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Path to the yukino-lsp executable. If unset, it will be searched automatically."
+        },
+        "yukino.server.extraArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Additional command-line arguments to pass to the yukino-lsp server."
+        },
+        "yukino.server.trace": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Trace communication between VS Code and the Yukino language server."
+        },
+        "yukino.codeLens.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable CodeLens annotations for runnable targets (main function, tests) matching Zed runnables."
+        },
+        "yukino.inlayHints.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable inlay type hints for variables with inferred types."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "yukino.restartServer",
+        "title": "Yukino: Restart Language Server",
+        "category": "Yukino"
+      },
+      {
+        "command": "yukino.runMain",
+        "title": "Yukino: Run (main)",
+        "category": "Yukino"
+      },
+      {
+        "command": "yukino.runFile",
+        "title": "Yukino: Run Current File",
+        "category": "Yukino"
+      },
+      {
+        "command": "yukino.runTest",
+        "title": "Yukino: Run Test",
+        "category": "Yukino"
+      },
+      {
+        "command": "yukino.testAll",
+        "title": "Yukino: Run All Tests",
+        "category": "Yukino"
+      },
+      {
+        "command": "yukino.build",
+        "title": "Yukino: Build Project",
+        "category": "Yukino"
+      },
+      {
+        "command": "yukino.check",
+        "title": "Yukino: Check Diagnostics",
+        "category": "Yukino"
+      },
+      {
+        "command": "yukino.showDoc",
+        "title": "Yukino: Show Documentation",
+        "category": "Yukino"
+      },
+      {
+        "command": "yukino.showMenu",
+        "title": "Yukino: Open Status Menu",
+        "category": "Yukino"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "editor.action.commentLine",
+        "key": "ctrl+/",
+        "mac": "cmd+/",
+        "when": "editorTextFocus && editorLangId == 'yukino'"
+      },
+      {
+        "command": "editor.action.commentLine",
+        "key": "ctrl+.",
+        "mac": "cmd+.",
+        "when": "editorTextFocus && editorLangId == 'yukino'"
+      },
+      {
+        "command": "editor.action.blockComment",
+        "key": "shift+alt+a",
+        "mac": "shift+alt+a",
+        "when": "editorTextFocus && editorLangId == 'yukino'"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  }
+}
