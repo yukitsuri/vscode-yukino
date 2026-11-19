@@ -53,8 +53,7 @@ Ensure `yukino-lsp` is installed. The extension automatically looks up standard 
 Build the package:
 
 ```bash
-npm install
-vsce package
+npm exec -- @vscode/vsce package
 ```
 
 Install via terminal:
