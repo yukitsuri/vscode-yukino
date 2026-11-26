@@ -25,6 +25,9 @@
       "include": "#macro-declarations"
     },
     {
+      "include": "#namespace-declarations"
+    },
+    {
       "include": "#class-declarations"
     },
     {
@@ -201,7 +204,7 @@
         {
           "name": "string.quoted.double.yukino",
           "begin": "\"",
-          "end": "\"|(?=\\n)",
+          "end": "\"|$",
           "patterns": [
             {
               "include": "#string-interpolation"
@@ -278,7 +281,7 @@
         },
         {
           "name": "constant.character.escape.common.yukino",
-          "match": "\\\\[nrt0\\\\'\"]"
+          "match": "\\\\[nrt0\\\\'\"$]"
         },
         {
           "name": "invalid.illegal.escape.yukino",
@@ -319,7 +322,7 @@
       ]
     },
     "imports": {
-      "begin": "(?:\\b(public)\\s+)?\\b(load)\\b",
+      "begin": "(?:\\b(public)\\s+)?\\b(c?load)\\b",
       "beginCaptures": {
         "1": {
           "name": "storage.modifier.yukino"
@@ -332,6 +335,9 @@
       "patterns": [
         {
           "include": "#comments"
+        },
+        {
+          "include": "#strings"
         },
         {
           "begin": ":",
@@ -403,10 +409,25 @@
         }
       ]
     },
+    "namespace-declarations": {
+      "patterns": [
+        {
+          "match": "\\b(namespace)\\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\\.[a-zA-Z_][a-zA-Z0-9_]*)*)",
+          "captures": {
+            "1": {
+              "name": "storage.type.namespace.yukino"
+            },
+            "2": {
+              "name": "entity.name.namespace.yukino"
+            }
+          }
+        }
+      ]
+    },
     "class-declarations": {
       "patterns": [
         {
-          "match": "(?:\\b(public|locked)\\s+)?\\b(class|struct|cstruct|interface|enum)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+          "match": "(?:\\b(public|locked)\\s+)?\\b(class|struct|cstruct|cunion|interface|enum)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
           "captures": {
             "1": {
               "name": "storage.modifier.yukino"
@@ -424,7 +445,24 @@
     "function-declarations": {
       "patterns": [
         {
-          "match": "(?:\\b(public|static|externc)\\s+)?\\b(fun|cfun)\\s+(init)\\b",
+          "match": "(?:\\b(public|static|externc|override)\\s+)?\\b(fun|cfun)\\s+(get|set)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.yukino"
+            },
+            "2": {
+              "name": "storage.type.function.yukino"
+            },
+            "3": {
+              "name": "storage.modifier.yukino"
+            },
+            "4": {
+              "name": "entity.name.function.yukino"
+            }
+          }
+        },
+        {
+          "match": "(?:\\b(public|static|externc|override)\\s+)?\\b(fun|cfun)\\s+(init)\\b",
           "captures": {
             "1": {
               "name": "storage.modifier.yukino"
@@ -477,7 +515,7 @@
       "patterns": [
         {
           "name": "storage.modifier.yukino",
-          "match": "\\b(public|locked|static|externc|ref|get|mut)\\b"
+          "match": "\\b(public|locked|static|externc|override|ref|get|set|mut)\\b"
         }
       ]
     },
@@ -485,7 +523,7 @@
       "patterns": [
         {
           "name": "storage.type.variable.yukino",
-          "match": "\\b(set|rewrite)\\b"
+          "match": "\\b(set|rewrite|cvar)\\b"
         },
         {
           "name": "storage.type.function.yukino",
@@ -493,7 +531,7 @@
         },
         {
           "name": "storage.type.class.yukino",
-          "match": "\\b(class|struct|cstruct|interface|enum)\\b"
+          "match": "\\b(class|struct|cstruct|cunion|interface|enum)\\b"
         },
         {
           "name": "storage.type.type.yukino",
@@ -663,7 +701,7 @@
       "patterns": [
         {
           "name": "support.type.primitive.yukino",
-          "match": "\\b(int8|int16|int32|int64|uint8|uint16|uint32|uint64|float32|float64|bool|char|void|never|string|bytes|c_char|c_int|c_size_t|c_void|c_long|c_short|c_uint|usize|isize)\\b"
+          "match": "\\b(int8|int16|int32|int64|uint8|uint16|uint32|uint64|float32|float64|bool|char|void|never|string|bytes|c_char|c_schar|c_uchar|c_short|c_ushort|c_int|c_uint|c_long|c_ulong|c_longlong|c_ulonglong|c_size_t|c_ssize_t|c_bool|c_void|usize|isize)\\b"
         },
         {
           "name": "support.type.builtin.yukino",
@@ -678,15 +716,18 @@
     "struct-fields": {
       "patterns": [
         {
-          "match": "^\\s*(?:\\b(public)\\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)(?![:=])",
+          "match": "^\\s*(?:\\b(public)\\s+)?(?:\\b(set|static)\\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)(?![:=])",
           "captures": {
             "1": {
               "name": "storage.modifier.yukino"
             },
             "2": {
-              "name": "variable.other.yukino"
+              "name": "storage.modifier.yukino"
             },
             "3": {
+              "name": "variable.other.yukino"
+            },
+            "4": {
               "name": "punctuation.separator.colon.yukino"
             }
           }

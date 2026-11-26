@@ -314,7 +314,7 @@ async function startServer(): Promise<void> {
             { scheme: 'untitled', language: 'yukino' }
         ],
         synchronize: {
-            fileEvents: vscode.workspace.createFileSystemWatcher('**/*.ykn')
+            fileEvents: vscode.workspace.createFileSystemWatcher('**/*.{ykn,ykni,h}')
         },
         outputChannel: outputChannel
     };

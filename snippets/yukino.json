@@ -551,5 +551,29 @@
     "prefix": "null",
     "body": "null",
     "description": "Null literal"
+  },
+  "cload header": {
+    "prefix": "cload",
+    "body": "cload \"$0\"",
+    "description": "Load a C header file"
+  },
+  "public cload header": {
+    "prefix": "pcload",
+    "body": "public cload \"$0\"",
+    "description": "Publicly load and re-export a C header file"
+  },
+  "cunion definition": {
+    "prefix": "cunion",
+    "body": [
+      "cunion ${1:Name} {",
+      "\t${2:field}: ${3:c_int}",
+      "}"
+    ],
+    "description": "C ABI compatible union declaration"
+  },
+  "cvar declaration": {
+    "prefix": "cvar",
+    "body": "cvar ${1:name}: ${2:c_int};",
+    "description": "External or exported C global variable"
   }
 }
