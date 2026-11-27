@@ -48,6 +48,22 @@ The extension contributes the following settings under `yukino`:
 
 Ensure `yukino-lsp` is installed. The extension automatically looks up standard directories, login shells, and Flatpak host environments.
 
+### With automatic script
+
+- Make sure you have Python installed.
+- Run the following command in your terminal:
+
+  **Windows:**
+  ```powershell
+  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yukitsuri/vscode-yukino/main/install.py" -OutFile install.py
+  python install.py
+  ```
+
+  **Linux:**
+  ```bash
+  curl -fsSLO https://raw.githubusercontent.com/yukitsuri/vscode-yukino/main/install.py && python3 install.py
+  ```
+
 ### From VSIX
 
 Build the package:
@@ -59,13 +75,13 @@ npm exec -- @vscode/vsce package
 Install via terminal:
 
 ```bash
-code --install-extension yukinolsp-0.2.1.vsix
+code --install-extension yukinolsp-0.1.1.vsix
 ```
 
 Or inside VS Code:
 1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`).
 2. Run `Extensions: Install from VSIX...`.
-3. Select `yukinolsp-0.2.1.vsix`.
+3. Select `yukinolsp-0.1.1.vsix`.
 
 ## License
 
